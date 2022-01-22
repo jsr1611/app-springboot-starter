@@ -6,8 +6,10 @@ import uz.digitalone.demo.model.Person;
 import uz.digitalone.demo.repository.PersonRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
+@RequestMapping(value = "/api")
 public class PersonController {
 /*
     public static List<Person> personList = new ArrayList<>(Arrays.asList(
@@ -28,14 +30,44 @@ public class PersonController {
         this.personRepo = personRepository;
     }
 
-    @RequestMapping(value = "/api/persons", method = RequestMethod.POST)
+    @RequestMapping(value = "/persons", method = RequestMethod.POST)
     public Person save(@RequestBody Person person){
         Person savedPerson = personRepo.save(person);
         return savedPerson;
     }
 
-    @RequestMapping(value = "/api/persons", method = RequestMethod.GET)
+    @RequestMapping(value = "/persons", method = RequestMethod.GET)
     public List<Person> findAll(){
+        return personRepo.findAll();
+    }
+
+    @RequestMapping(value = "/persons/{id}", method = RequestMethod.GET)
+    public Person findById(@PathVariable Long id){
+        Optional<Person> optionalPerson = personRepo.findById(id);
+        return optionalPerson.orElse(null);
+    }
+
+    @RequestMapping(value = "/persons/{id}", method = RequestMethod.PUT)
+    public Person edit(@PathVariable Long id, @RequestBody Person person){
+        Optional<Person> optionalPerson = personRepo.findById(id);
+        if(optionalPerson.isPresent()){
+            Person personToBeUpdated = optionalPerson.get();
+            personToBeUpdated.setFirstname(person.getFirstname());
+            personToBeUpdated.setLastname(person.getLastname());
+            personToBeUpdated.setEmail(person.getEmail());
+            return personRepo.save(personToBeUpdated);
+        }
         return null;
     }
+
+    @RequestMapping(value = "persons/{id}", method = RequestMethod.DELETE)
+    public String deleteById(@PathVariable Long id){
+        if(personRepo.existsById(id)){
+            personRepo.deleteById(id);
+            return "Person with id {"+id+"} was successfully deleted";
+        }
+        return "Person with id {"+id+"} was not found";
+
+    }
+
 }
